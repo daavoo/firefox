@@ -65,6 +65,8 @@ firefox-appdir = "browser"
 
 ["test_Tools_SearchBrowsingHistory.js"]
 
+["test_Tools_SearchTheWebPath.js"]
+
 ["test_Utils.js"]
 
 ["test_Utils_RemoteSettings.js"]

@@ -19,6 +19,7 @@ const lazy = XPCOMUtils.declareLazy({
 const APIKEY_PREF = "browser.smartwindow.apiKey";
 const ENDPOINT_PREF = "browser.smartwindow.endpoint";
 const CUSTOM_ENDPOINT_PREF = "browser.smartwindow.customEndpoint";
+const ENDPOINT_IS_MLPA_PREF = "browser.smartwindow.endpoint.isMLPA";
 const MODEL_CHOICE_PREF = "browser.smartwindow.firstrun.modelChoice";
 const CUSTOM_MODEL_CHOICE_ID = "0";
 const DEFAULT_ENGINE_ID = "smart-openai";
@@ -116,19 +117,27 @@ export class openAIEngine {
 
   /**
    * Whether this profile's requests are pointed somewhere other than Mozilla's
-   * default endpoint: either the custom model choice is selected, or the
-   * endpoint pref itself was overridden.
+   * MLPA: either the custom model choice is selected, or the endpoint pref was
+   * overridden to something not marked as an MLPA deployment.
    *
    * Unlike `isCustomEndpoint` this is a profile-wide question, answerable
    * without building an engine, so callers can withhold a feature that depends
-   * on a service only Mozilla's endpoint provides.
+   * on a service only Mozilla's endpoint provides. Setting
+   * browser.smartwindow.endpoint.isMLPA marks an overridden endpoint (MLPA dev,
+   * stage, or a local one) as providing those services too.
    *
    * @returns {boolean}
    */
   static usesCustomEndpoint() {
-    return (
+    if (
       Services.prefs.getStringPref(MODEL_CHOICE_PREF, "") ===
-        CUSTOM_MODEL_CHOICE_ID || openAIEngine.endpoint !== DEFAULT_ENDPOINT
+      CUSTOM_MODEL_CHOICE_ID
+    ) {
+      return true;
+    }
+    return (
+      openAIEngine.endpoint !== DEFAULT_ENDPOINT &&
+      !Services.prefs.getBoolPref(ENDPOINT_IS_MLPA_PREF, false)
     );
   }
 
